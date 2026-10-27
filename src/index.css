@@ -157,3 +157,57 @@ body {
   color: #2563eb;
   margin-bottom: 8px;
 }
+
+.counter {
+  padding: 32px;
+  text-align: center;
+}
+
+.counter h2 {
+  margin-bottom: 16px;
+}
+
+.counter-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.counter-box button,
+.controls button {
+  padding: 8px 18px;
+  font-size: 18px;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: white;
+  cursor: pointer;
+}
+
+.counter-box button:hover,
+.controls button:hover {
+  background: #1d4ed8;
+}
+
+.count {
+  font-size: 28px;
+  font-weight: bold;
+  min-width: 40px;
+}
+
+.controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.controls input,
+.controls select {
+  padding: 8px 12px;
+  font-size: 16px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
