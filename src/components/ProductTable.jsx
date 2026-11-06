@@ -1,4 +1,6 @@
-function ProductTable({ products }) {
+import ProductRow from "./ProductRow";
+
+function ProductTable({ products, onEdit, onDelete }) {
   if (products.length === 0) {
     return <p>No products found.</p>;
   }
@@ -13,17 +15,18 @@ function ProductTable({ products }) {
             <th>Category</th>
             <th>Price</th>
             <th>Qty</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {products.map((p, index) => (
-            <tr key={p._id}>
-              <td>{index + 1}</td>
-              <td>{p.name}</td>
-              <td>{p.category || "-"}</td>
-              <td>{p.price}</td>
-              <td>{p.qty}</td>
-            </tr>
+            <ProductRow
+              key={p._id}
+              product={p}
+              index={index}
+              onEdit={onEdit}
+              onDelete={onDelete}
+            />
           ))}
         </tbody>
       </table>

@@ -1,19 +1,25 @@
 import { useState } from "react";
 
-function ProductForm() {
-  const [form, setForm] = useState({
-    name: "",
-    category: "",
-    price: "",
-    qty: "",
-  });
+const emptyForm = { name: "", category: "", price: "", qty: "" };
+
+function ProductForm({ editingProduct, onSave, onCancel }) {
+  const [form, setForm] = useState(
+    editingProduct
+      ? {
+          name: editingProduct.name,
+          category: editingProduct.category || "",
+          price: String(editingProduct.price),
+          qty: String(editingProduct.qty),
+        }
+      : emptyForm
+  );
   const [errors, setErrors] = useState({});
 
   function handleChange(e) {
     setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
 
     const newErrors = {};
@@ -31,18 +37,30 @@ function ProductForm() {
     }
 
     setErrors(newErrors);
-
     if (Object.keys(newErrors).length > 0) {
       return;
     }
 
-    console.log("Valid form:", form);
-    setForm({ name: "", category: "", price: "", qty: "" });
+    const saved = await onSave({
+      name: formatName(form.name),
+      category: form.category,
+      price: Number(form.price),
+      qty: Number(form.qty),
+    });
+
+    if (saved) {
+      setForm(emptyForm);
+    }
   }
+
+  function formatName(name) {
+  const trimmed = name.trim();
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+}
 
   return (
     <form className="product-form" onSubmit={handleSubmit}>
-      <h2>Add Product</h2>
+      <h2>{editingProduct ? "Edit Product" : "Add Product"}</h2>
 
       <label>
         Name
@@ -76,6 +94,7 @@ function ProductForm() {
           name="price"
           value={form.price}
           onChange={handleChange}
+          onWheel={(e) => e.target.blur()}
           placeholder="Price"
         />
       </label>
@@ -88,12 +107,18 @@ function ProductForm() {
           name="qty"
           value={form.qty}
           onChange={handleChange}
+          onWheel={(e) => e.target.blur()}
           placeholder="Quantity"
         />
       </label>
       {errors.qty && <p className="error">{errors.qty}</p>}
 
-      <button type="submit">Add</button>
+      <button type="submit">{editingProduct ? "Update" : "Add"}</button>
+      {editingProduct && (
+        <button type="button" className="cancel-btn" onClick={onCancel}>
+          Cancel
+        </button>
+      )}
     </form>
   );
 }
