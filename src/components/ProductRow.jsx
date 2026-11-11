@@ -1,18 +1,26 @@
 function ProductRow({ product, index, onEdit, onDelete }) {
   return (
-    <tr>
-      <td>{index + 1}</td>
-      <td>{product.name}</td>
-      <td>{product.category || "-"}</td>
-      <td>₹{Number(product.price).toFixed(2)}</td>
-      <td>{product.qty}</td>
-      <td>
-        <button className="edit-btn" onClick={() => onEdit(product)}>
-          Edit
-        </button>{" "}
-        <button className="delete-btn" onClick={() => onDelete(product._id)}>
-          Delete
-        </button>
+    <tr className="border-b border-gray-200 odd:bg-white even:bg-gray-100 hover:bg-blue-50">
+      <td className="px-4 py-3">{index + 1}</td>
+      <td className="px-4 py-3">{product.name}</td>
+      <td className="px-4 py-3">{product.category || "-"}</td>
+      <td className="px-4 py-3">₹{Number(product.price).toFixed(2)}</td>
+      <td className="px-4 py-3">{product.qty}</td>
+      <td className="px-4 py-3">
+        <div className="flex justify-center gap-2">
+          <button
+            onClick={() => onEdit(product)}
+            className="rounded bg-blue-600 px-3 py-1.5 text-white transition hover:bg-blue-700"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => onDelete(product._id)}
+            className="rounded bg-red-600 px-3 py-1.5 text-white transition hover:bg-red-700"
+          >
+            Delete
+          </button>
+        </div>
       </td>
     </tr>
   );

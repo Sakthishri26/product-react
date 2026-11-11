@@ -1,13 +1,13 @@
-import ProductFilters from "./components/ProductFilters"; 
-import { useState , useEffect } from "react" ;
+import { useState, useEffect } from "react";
 import Header from "./components/Header";
 import Banner from "./components/Banner";
 import ProductForm from "./components/ProductForm";
+import ProductFilters from "./components/ProductFilters";
 import ProductTable from "./components/ProductTable";
+import ConfirmModal from "./components/ConfirmModal";
 import Footer from "./components/Footer";
 
 const API_URL = import.meta.env.VITE_API_URL;
-console.log("API_URL is:", API_URL);
 
 function App() {
   const [products, setProducts] = useState([]);
@@ -15,19 +15,20 @@ function App() {
   const [error, setError] = useState("");
   const [actionError, setActionError] = useState("");
   const [editingProduct, setEditingProduct] = useState(null);
+  const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [sortBy, setSortBy] = useState("default");
 
   async function loadProducts() {
-    try{
-      const response= await fetch(`${API_URL}/products`);
+    try {
+      const response = await fetch(`${API_URL}/products`);
       if (!response.ok) {
         throw new Error("Server error " + response.status);
-     }
-     const data = await response.json();
-     setProducts(data);
-     setError("");
+      }
+      const data = await response.json();
+      setProducts(data);
+      setError("");
     } catch (err) {
       setError("Can't load products. Is the API server running?");
     } finally {
@@ -46,7 +47,7 @@ function App() {
       ? `${API_URL}/products/${editingProduct._id}`
       : `${API_URL}/products`;
 
-    try{
+    try {
       const response = await fetch(url, {
         method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
@@ -67,10 +68,13 @@ function App() {
     }
   }
 
-  async function handleDelete(id) {
-    if (!window.confirm("Delete this product?")) {
-      return;
-    }
+  function handleDelete(id) {
+    setDeleteId(id);
+  }
+
+  async function confirmDelete() {
+    const id = deleteId;
+    setDeleteId(null);
     setActionError("");
 
     try {
@@ -99,66 +103,80 @@ function App() {
     "All",
     ...new Set(products.map((p) => p.category).filter(Boolean)),
   ];
+
   const filteredProducts = products
     .filter((p) => p.name.toLowerCase().includes(search.trim().toLowerCase()))
     .filter((p) => categoryFilter === "All" || p.category === categoryFilter);
+
   const visibleProducts = [...filteredProducts].sort((a, b) => {
     if (sortBy === "price-asc") return a.price - b.price;
     if (sortBy === "price-desc") return b.price - a.price;
-    if (sortBy === "name-asc") return a.name.localeCompare(b.name);
-    if (sortBy === "name-desc") return b.name.localeCompare(a.name);
+    if (sortBy === "qty-asc") return a.qty - b.qty;
+    if (sortBy === "qty-desc") return b.qty - a.qty;
     return 0;
   });
+
   const totalStockValue = products.reduce((sum, p) => sum + p.price * p.qty, 0);
 
   return (
-    <div className="app">
+    <div className="flex min-h-screen flex-col text-gray-800">
       <Header />
       <Banner
         title="Welcome to Smartmart"
-        subtitle="Find the best products at the best prices."/>
+        subtitle="Find the best products at the best prices."
+      />
 
-      <ProductForm
-        key={editingProduct ? editingProduct._id : "new"}
-        editingProduct={editingProduct}
-        onSave={handleSave}
-        onCancel={() => setEditingProduct(null)} />
+      <main className="flex-1 px-4 pb-10">
+        <ProductForm
+          key={editingProduct ? editingProduct._id : "new"}
+          editingProduct={editingProduct}
+          onSave={handleSave}
+          onCancel={() => setEditingProduct(null)}
+        />
 
-      <section className="products" id="products">
-        <h2>Product Inventory</h2>
+        <section id="products" className="mx-auto max-w-4xl text-center">
+          <h2 className="mb-6 text-2xl font-bold">Product Inventory</h2>
 
-        {actionError && <p className="error">{actionError}</p>}
-        {loading && <p>Loading...</p>}
-        {error && <p className="error">{error}</p>}
-        {!loading && !error && (
-          <>
-            <ProductFilters
-              search={search}
-              onSearchChange={setSearch}
-              category={categoryFilter}
-              onCategoryChange={setCategoryFilter}
-              categories={categories}
-              sortBy={sortBy}
-              onSortChange={setSortBy}
-            />
+          {actionError && <p className="mb-3 text-red-600">{actionError}</p>}
+          {loading && <p>Loading...</p>}
+          {error && <p className="text-red-600">{error}</p>}
+          {!loading && !error && (
+            <>
+              <ProductFilters
+                search={search}
+                onSearchChange={setSearch}
+                category={categoryFilter}
+                onCategoryChange={setCategoryFilter}
+                categories={categories}
+                sortBy={sortBy}
+                onSortChange={setSortBy}
+              />
 
-            <ProductTable
-              products={visibleProducts}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
+              <ProductTable
+                products={visibleProducts}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
 
-            <p className="total">
-              Total stock value: ₹{totalStockValue.toFixed(2)}
-            </p>
-          </>
-        )}
-      </section>
+              <p className="mt-4 text-xl font-bold">
+                Total stock value: ₹{totalStockValue.toFixed(2)}
+              </p>
+            </>
+          )}
+        </section>
+      </main>
 
       <Footer />
+
+      {deleteId && (
+        <ConfirmModal
+          message="Delete this product?"
+          onConfirm={confirmDelete}
+          onCancel={() => setDeleteId(null)}
+        />
+      )}
     </div>
   );
 }
 
 export default App;
-    

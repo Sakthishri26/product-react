@@ -2,6 +2,14 @@ import { useState } from "react";
 
 const emptyForm = { name: "", category: "", price: "", qty: "" };
 
+function formatName(name) {
+  const trimmed = name.trim();
+  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
+}
+
+const inputClass =
+  "w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300";
+
 function ProductForm({ editingProduct, onSave, onCancel }) {
   const [form, setForm] = useState(
     editingProduct
@@ -53,16 +61,16 @@ function ProductForm({ editingProduct, onSave, onCancel }) {
     }
   }
 
-  function formatName(name) {
-  const trimmed = name.trim();
-  return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
-}
-
   return (
-    <form className="product-form" onSubmit={handleSubmit}>
-      <h2>{editingProduct ? "Edit Product" : "Add Product"}</h2>
+    <form
+      onSubmit={handleSubmit}
+      className="mx-auto my-8 flex w-full max-w-md flex-col gap-3 rounded-lg bg-white p-6 shadow-md"
+    >
+      <h2 className="text-center text-2xl font-bold">
+        {editingProduct ? "Edit Product" : "Add Product"}
+      </h2>
 
-      <label>
+      <label className="flex flex-col gap-1 font-medium">
         Name
         <input
           type="text"
@@ -70,13 +78,19 @@ function ProductForm({ editingProduct, onSave, onCancel }) {
           value={form.name}
           onChange={handleChange}
           placeholder="Product name"
+          className={inputClass}
         />
       </label>
-      {errors.name && <p className="error">{errors.name}</p>}
+      {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
 
-      <label>
+      <label className="flex flex-col gap-1 font-medium">
         Category
-        <select name="category" value={form.category} onChange={handleChange}>
+        <select
+          name="category"
+          value={form.category}
+          onChange={handleChange}
+          className={inputClass}
+        >
           <option value="">Select category</option>
           <option value="Electronics">Electronics</option>
           <option value="Books">Books</option>
@@ -85,9 +99,11 @@ function ProductForm({ editingProduct, onSave, onCancel }) {
           <option value="Beauty & fashion">Beauty & fashion</option>
         </select>
       </label>
-      {errors.category && <p className="error">{errors.category}</p>}
+      {errors.category && (
+        <p className="text-sm text-red-600">{errors.category}</p>
+      )}
 
-      <label>
+      <label className="flex flex-col gap-1 font-medium">
         Price
         <input
           type="number"
@@ -96,11 +112,12 @@ function ProductForm({ editingProduct, onSave, onCancel }) {
           onChange={handleChange}
           onWheel={(e) => e.target.blur()}
           placeholder="Price"
+          className={inputClass}
         />
       </label>
-      {errors.price && <p className="error">{errors.price}</p>}
+      {errors.price && <p className="text-sm text-red-600">{errors.price}</p>}
 
-      <label>
+      <label className="flex flex-col gap-1 font-medium">
         Quantity
         <input
           type="number"
@@ -109,13 +126,23 @@ function ProductForm({ editingProduct, onSave, onCancel }) {
           onChange={handleChange}
           onWheel={(e) => e.target.blur()}
           placeholder="Quantity"
+          className={inputClass}
         />
       </label>
-      {errors.qty && <p className="error">{errors.qty}</p>}
+      {errors.qty && <p className="text-sm text-red-600">{errors.qty}</p>}
 
-      <button type="submit">{editingProduct ? "Update" : "Add"}</button>
+      <button
+        type="submit"
+        className="w-full rounded-md bg-blue-600 px-4 py-2.5 text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+      >
+        {editingProduct ? "Update" : "Add"}
+      </button>
       {editingProduct && (
-        <button type="button" className="cancel-btn" onClick={onCancel}>
+        <button
+          type="button"
+          onClick={onCancel}
+          className="w-full rounded-md bg-gray-500 px-4 py-2.5 text-white transition hover:bg-gray-600"
+        >
           Cancel
         </button>
       )}
