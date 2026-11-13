@@ -7,8 +7,8 @@ function ProductTable({ products, onEdit, onDelete }) {
 
   return (
     <div className="mx-auto w-full max-w-4xl overflow-x-auto rounded-lg shadow-md">
-      <table className="w-full min-w-[600px] border-collapse bg-white text-center">
-        <thead className="bg-gray-900 text-white">
+      <table className="w-full min-w-[600px] border-collapse bg-white text-center dark:bg-gray-800">
+       <thead className="bg-gray-900 text-white dark:bg-black"> 
           <tr>
             <th className="px-4 py-3">#</th>
             <th className="px-4 py-3">Name</th>

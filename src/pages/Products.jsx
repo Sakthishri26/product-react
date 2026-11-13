@@ -1,12 +1,13 @@
 import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 import ProductForm from "../components/ProductForm";
 import ProductFilters from "../components/ProductFilters";
 import ProductTable from "../components/ProductTable";
 import ConfirmModal from "../components/ConfirmModal";
-
-const API_URL = import.meta.env.VITE_API_URL;
+import Spinner from "../components/Spinner";
 
 function Products() {
+  const { authFetch } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -19,12 +20,11 @@ function Products() {
 
   async function loadProducts() {
     try {
-      const response = await fetch(`${API_URL}/products`);
+      const response = await authFetch("/products");
       if (!response.ok) {
         throw new Error("Server error " + response.status);
       }
-      const data = await response.json();
-      setProducts(data);
+      setProducts(await response.json());
       setError("");
     } catch (err) {
       setError("Can't load products. Is the API server running?");
@@ -39,14 +39,9 @@ function Products() {
 
   async function handleSave(product) {
     setActionError("");
-    const isEditing = editingProduct !== null;
-    const url = isEditing
-      ? `${API_URL}/products/${editingProduct._id}`
-      : `${API_URL}/products`;
-
     try {
-      const response = await fetch(url, {
-        method: isEditing ? "PUT" : "POST",
+      const response = await authFetch(`/products/${editingProduct._id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product),
       });
@@ -75,9 +70,7 @@ function Products() {
     setActionError("");
 
     try {
-      const response = await fetch(`${API_URL}/products/${id}`, {
-        method: "DELETE",
-      });
+      const response = await authFetch(`/products/${id}`, { method: "DELETE" });
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.error || "Delete failed");
@@ -116,19 +109,21 @@ function Products() {
   const totalStockValue = products.reduce((sum, p) => sum + p.price * p.qty, 0);
 
   return (
-    <div className="px-4 pb-10">
-      <ProductForm
-        key={editingProduct ? editingProduct._id : "new"}
-        editingProduct={editingProduct}
-        onSave={handleSave}
-        onCancel={() => setEditingProduct(null)}
-      />
+    <div>
+      {editingProduct && (
+        <ProductForm
+          key={editingProduct._id}
+          editingProduct={editingProduct}
+          onSave={handleSave}
+          onCancel={() => setEditingProduct(null)}
+        />
+      )}
 
       <section className="mx-auto max-w-4xl text-center">
-        <h2 className="mb-6 text-2xl font-bold">Product Inventory</h2>
+        <h1 className="mb-6 text-2xl font-bold">Products</h1>
 
         {actionError && <p className="mb-3 text-red-600">{actionError}</p>}
-        {loading && <p>Loading...</p>}
+        {loading && <Spinner />}
         {error && <p className="text-red-600">{error}</p>}
         {!loading && !error && (
           <>
@@ -157,7 +152,7 @@ function Products() {
 
       {deleteId && (
         <ConfirmModal
-          message="Delete this product?"
+          message="This will permanently delete the product."
           onConfirm={confirmDelete}
           onCancel={() => setDeleteId(null)}
         />

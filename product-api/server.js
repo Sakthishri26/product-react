@@ -1,3 +1,5 @@
+const auth = require("./middleware/auth");
+const authRoutes = require("./routes/auth");
 require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
@@ -7,7 +9,8 @@ const Product = require("./models/Product");
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+app.use("/auth", authRoutes);
+app.use("/products", auth);   
 
 async function productExists(name, category, excludeId) {
   const filter = { name, category };

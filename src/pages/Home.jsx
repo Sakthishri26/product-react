@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import Banner from "../components/Banner";
 import ProductCard from "../components/ProductCard";
+import Spinner from "../components/Spinner";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -38,7 +39,7 @@ function Home() {
       <section className="mx-auto max-w-5xl px-4 py-10">
         <h2 className="mb-6 text-center text-2xl font-bold">Featured Products</h2>
 
-        {loading && <p className="text-center">Loading...</p>}
+        {loading && <Spinner />}
         {error && <p className="text-center text-red-600">{error}</p>}
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">

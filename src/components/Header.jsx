@@ -1,72 +1,96 @@
-import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { useState, useEffect, useRef } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import ThemeToggle from "./ThemeToggle";
 
-const links = [
-  { to: "/", label: "Home" },
-  { to: "/products", label: "Products" },
-  { to: "/about", label: "About" },
-  { to: "/contact", label: "Contact" },
-];
-
-function desktopClass({ isActive }) {
-  return isActive
-    ? "font-semibold text-blue-400 underline"
-    : "hover:text-blue-400 hover:underline";
+function getInitials(name = "") {
+  const letters = name
+    .split(" ")
+    .filter(Boolean)
+    .map((word) => word[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+  return letters || "U";
 }
 
-function mobileClass({ isActive }) {
-  return isActive
-    ? "rounded bg-gray-700 px-3 py-2 font-semibold text-blue-400"
-    : "rounded px-3 py-2 hover:bg-gray-700";
-}
+function Header({ onMenuClick }) {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef(null);
 
-function Header() {
-  const [open, setOpen] = useState(false);
+  const [dark, setDark] = useState(() =>
+    document.documentElement.classList.contains("dark")
+  );
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+    localStorage.setItem("theme", dark ? "dark" : "light");
+  }, [dark]);
+
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  function handleLogout() {
+    setMenuOpen(false);
+    logout();
+    navigate("/login");
+  }
 
   return (
-    <header className="bg-gray-900 text-white">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link to="/" className="text-2xl font-bold">
-          Smartmart
-        </Link>
-
-        <nav className="hidden gap-6 md:flex">
-          {links.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end={link.to === "/"}
-              className={desktopClass}
-            >
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
-
+    <header className="sticky top-0 z-20 flex items-center justify-between border-b border-gray-200 bg-white px-4 py-3 dark:border-gray-700 dark:bg-gray-800">
+      <div className="flex items-center gap-3">
         <button
-          className="rounded p-2 text-2xl hover:bg-gray-700 md:hidden"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
+          onClick={onMenuClick}
+          aria-label="Open menu"
+          className="rounded p-2 text-2xl hover:bg-gray-100 dark:hover:bg-gray-700 md:hidden"
         >
-          {open ? "✕" : "☰"}
+          ☰
         </button>
+        <span className="text-xl font-bold">Smartmart</span>
       </div>
 
-      {open && (
-        <nav className="flex flex-col gap-1 px-6 pb-4 md:hidden">
-          {links.map((link) => (
-            <NavLink
-              key={link.to}
-              to={link.to}
-              end={link.to === "/"}
-              onClick={() => setOpen(false)}
-              className={mobileClass}
-            >
-              {link.label}
-            </NavLink>
-          ))}
-        </nav>
-      )}
+      <div className="flex items-center gap-4">
+        <ThemeToggle dark={dark} onToggle={() => setDark(!dark)} />
+
+        <div className="relative" ref={menuRef}>
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="flex items-center gap-2 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-700"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+              {getInitials(user?.name)}
+            </span>
+            <span className="hidden pr-2 sm:inline">{user?.name}</span>
+          </button>
+
+          {menuOpen && (
+            <div className="absolute right-0 z-50 mt-2 w-44 rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-600 dark:bg-gray-700">
+              <Link
+                to="/profile"
+                onClick={() => setMenuOpen(false)}
+                className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600"
+              >
+                My Profile
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="block w-full px-4 py-2 text-left hover:bg-gray-100 dark:hover:bg-gray-600"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </header>
   );
 }

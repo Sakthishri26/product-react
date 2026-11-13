@@ -8,7 +8,7 @@ function formatName(name) {
 }
 
 const inputClass =
-  "w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300";
+  "w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white";
 
 function ProductForm({ editingProduct, onSave, onCancel }) {
   const [form, setForm] = useState(
@@ -64,7 +64,7 @@ function ProductForm({ editingProduct, onSave, onCancel }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mx-auto my-8 flex w-full max-w-md flex-col gap-3 rounded-lg bg-white p-6 shadow-md"
+      className="mx-auto my-8 flex w-full max-w-md flex-col gap-3 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800"
     >
       <h2 className="text-center text-2xl font-bold">
         {editingProduct ? "Edit Product" : "Add Product"}

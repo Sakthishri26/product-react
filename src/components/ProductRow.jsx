@@ -1,12 +1,12 @@
 import { Link } from "react-router-dom";
 function ProductRow({ product, index, onEdit, onDelete }) {
   return (
-    <tr className="border-b border-gray-200 odd:bg-white even:bg-gray-100 hover:bg-blue-50">
+    <tr className="border-b border-gray-200 odd:bg-white even:bg-gray-100 hover:bg-blue-50 dark:border-gray-700 dark:odd:bg-gray-800 dark:even:bg-gray-700 dark:hover:bg-gray-600">
       <td className="px-4 py-3">{index + 1}</td>
       <td className="px-4 py-3">
         <Link
           to={`/products/${product._id}`}
-          className="font-medium text-blue-600 hover:underline"
+          className="font-medium text-blue-600 hover:underline dark:text-blue-400"
      >
           {product.name}
       </Link>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 
 const inputClass =
-  "w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300";
+  "w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white";
 
 function Contact() {
   const [sent, setSent] = useState(false);
@@ -22,7 +22,7 @@ function Contact() {
       ) : (
         <form
           onSubmit={handleSubmit}
-          className="flex flex-col gap-3 rounded-lg bg-white p-6 shadow-md"
+          className="flex flex-col gap-3 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800"
         >
           <label className="flex flex-col gap-1 font-medium">
             Name

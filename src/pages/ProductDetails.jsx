@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
+import Spinner from "../components/Spinner";
+import { useAuth } from "../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
 function ProductDetails() {
   const { id } = useParams();
+  const { authFetch } = useAuth();
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState(""); 
@@ -14,7 +17,7 @@ function ProductDetails() {
       setLoading(true);
       setStatus("");
       try {
-        const response = await fetch(`${API_URL}/products/${id}`);
+        const response = await authFetch(`/products/${id}`);
 
         if (response.status === 404 || response.status === 400) {
           setStatus("notfound");
@@ -34,7 +37,7 @@ function ProductDetails() {
     }
 
     loadProduct();
-  }, [id]);
+  }, [id, authFetch]);
 
   return (
     <section className="mx-auto max-w-lg px-4 py-10">
@@ -42,7 +45,7 @@ function ProductDetails() {
         ← Back to products
       </Link>
 
-      {loading && <p className="text-center">Loading...</p>}
+      {loading && <Spinner />}
 
       {!loading && status === "notfound" && (
         <p className="rounded-lg bg-red-100 p-6 text-center text-xl text-red-700">
@@ -57,7 +60,7 @@ function ProductDetails() {
       )}
 
       {!loading && product && status === "" && (
-        <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-md">
+        <div className="rounded-lg border border-gray-200 bg-white p-8 shadow-md dark:border-gray-700 dark:bg-gray-800">
           <h1 className="mb-2 text-3xl font-bold">{product.name}</h1>
           <p className="mb-4 text-gray-500">{product.category || "No category"}</p>
 
@@ -65,7 +68,7 @@ function ProductDetails() {
             ₹{Number(product.price).toFixed(2)}
           </p>
 
-          <dl className="grid grid-cols-2 gap-3 text-gray-700">
+          <dl className="grid grid-cols-2 gap-3 text-gray-700 dark:text-gray-300">
             <dt className="font-medium">Quantity in stock</dt>
             <dd>{product.qty}</dd>
             <dt className="font-medium">Stock value</dt>

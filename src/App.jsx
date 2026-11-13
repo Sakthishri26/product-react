@@ -1,31 +1,32 @@
 import { Routes, Route } from "react-router-dom";
-import Header from "./components/Header";
-import Footer from "./components/Footer";
-import Home from "./pages/Home";
+import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "./components/Layout";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
+import AddProduct from "./pages/AddProduct";
 import ProductDetails from "./pages/ProductDetails";
-import About from "./pages/About";
-import Contact from "./pages/Contact";
+import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 
 function App() {
   return (
-    <div className="flex min-h-screen flex-col text-gray-800">
-      <Header />
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
-      <main className="flex-1">
-        <Routes>
-          <Route path="/" element={<Home />} />
+      <Route element={<ProtectedRoute />}>
+        <Route element={<Layout />}>
+          <Route path="/" element={<Dashboard />} />
           <Route path="/products" element={<Products />} />
+          <Route path="/products/new" element={<AddProduct />} />
           <Route path="/products/:id" element={<ProductDetails />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact" element={<Contact />} />
+          <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<NotFound />} />
-        </Routes>
-      </main>
-
-      <Footer />
-    </div>
+        </Route>
+      </Route>
+    </Routes>
   );
 }
 

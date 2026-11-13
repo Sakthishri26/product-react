@@ -4,9 +4,9 @@ function Banner({ title, subtitle }) {
   const navigate = useNavigate();
 
   return (
-    <section className="flex flex-col items-center gap-4 bg-sky-100 px-5 py-20 text-center">
+    <section className="flex flex-col items-center gap-4 bg-sky-100 px-5 py-20 text-center dark:bg-gray-800">
       <h1 className="text-3xl font-bold md:text-5xl">{title}</h1>
-      <p className="text-base text-gray-700 md:text-xl">{subtitle}</p>
+      <p className="text-base text-gray-700 md:text-xl dark:text-gray-300">{subtitle}</p>
       <button
         onClick={() => navigate("/products")}
         className="rounded-md bg-blue-600 px-7 py-3 text-lg text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-400"
