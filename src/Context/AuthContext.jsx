@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import toast from "react-hot-toast";
 
 const API_URL = import.meta.env.VITE_API_URL;
 const AuthContext = createContext(null);
@@ -20,6 +21,7 @@ export function AuthProvider({ children }) {
     setUser(null);
   }, []);
 
+  
   const authFetch = useCallback(
     async (path, options = {}) => {
       const response = await fetch(`${API_URL}${path}`, {
@@ -29,7 +31,16 @@ export function AuthProvider({ children }) {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
+
       if (response.status === 401) {
+        let message = "Session expired. Please log in again.";
+        try {
+          const data = await response.clone().json();
+          message = data.error || data.message || message;
+        } catch {
+          
+        }
+        toast.error(message, { id: "session" });
         logout();
       }
       return response;
@@ -37,6 +48,13 @@ export function AuthProvider({ children }) {
     [logout]
   );
 
+  
+  const hasPermission = useCallback(
+    (permission) => Boolean(user?.permissions?.includes(permission)),
+    [user]
+  );
+
+  
   useEffect(() => {
     if (!localStorage.getItem("token")) {
       setChecking(false);
@@ -62,7 +80,7 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ token, user, setUser, checking, login, logout, authFetch }}
+      value={{ token, user, setUser, checking, login, logout, authFetch, hasPermission }}
     >
       {children}
     </AuthContext.Provider>

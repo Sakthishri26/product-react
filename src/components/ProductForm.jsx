@@ -1,4 +1,8 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import Input from "./Input";
+import Select from "./Select";
+import Button from "./Button";
 
 const emptyForm = { name: "", category: "", price: "", qty: "" };
 
@@ -7,144 +11,112 @@ function formatName(name) {
   return trimmed.charAt(0).toUpperCase() + trimmed.slice(1);
 }
 
-const inputClass =
-  "w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white";
 
 function ProductForm({ editingProduct, onSave, onCancel }) {
-  const [form, setForm] = useState(
-    editingProduct
+  const [serverError, setServerError] = useState("");
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    defaultValues: editingProduct
       ? {
           name: editingProduct.name,
           category: editingProduct.category || "",
           price: String(editingProduct.price),
           qty: String(editingProduct.qty),
         }
-      : emptyForm
-  );
-  const [errors, setErrors] = useState({});
+      : emptyForm,
+  });
 
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-
-    const newErrors = {};
-    if (form.name.trim() === "") {
-      newErrors.name = "Name is required";
-    }
-    if (form.category === "") {
-      newErrors.category = "Please choose a category";
-    }
-    if (form.price === "" || Number(form.price) < 0) {
-      newErrors.price = "Price must be 0 or more";
-    }
-    if (form.qty === "" || Number(form.qty) < 0) {
-      newErrors.qty = "Quantity must be 0 or more";
-    }
-
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) {
-      return;
-    }
-
-    const saved = await onSave({
-      name: formatName(form.name),
-      category: form.category,
-      price: Number(form.price),
-      qty: Number(form.qty),
+  async function submit(values) {
+    setServerError("");
+    const message = await onSave({
+      name: formatName(values.name),
+      category: values.category,
+      price: Number(values.price),
+      qty: Number(values.qty),
     });
 
-    if (saved) {
-      setForm(emptyForm);
+    if (message) {
+      setServerError(message); 
+    } else {
+      reset(emptyForm);
     }
   }
 
   return (
     <form
-      onSubmit={handleSubmit}
-      className="mx-auto my-8 flex w-full max-w-md flex-col gap-3 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800"
+      onSubmit={handleSubmit(submit)}
+      noValidate
+      className="mx-auto my-6 flex w-full max-w-md flex-col gap-3 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800"
     >
       <h2 className="text-center text-2xl font-bold">
         {editingProduct ? "Edit Product" : "Add Product"}
       </h2>
 
-      <label className="flex flex-col gap-1 font-medium">
-        Name
-        <input
-          type="text"
-          name="name"
-          value={form.name}
-          onChange={handleChange}
-          placeholder="Product name"
-          className={inputClass}
-        />
-      </label>
-      {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
-
-      <label className="flex flex-col gap-1 font-medium">
-        Category
-        <select
-          name="category"
-          value={form.category}
-          onChange={handleChange}
-          className={inputClass}
-        >
-          <option value="">Select category</option>
-          <option value="Electronics">Electronics</option>
-          <option value="Books">Books</option>
-          <option value="Cloth">Cloth</option>
-          <option value="Food">Food</option>
-          <option value="Beauty & fashion">Beauty & fashion</option>
-        </select>
-      </label>
-      {errors.category && (
-        <p className="text-sm text-red-600">{errors.category}</p>
+      {serverError && (
+        <p className="rounded bg-red-100 p-2 text-center text-sm text-red-700">
+          {serverError}
+        </p>
       )}
 
-      <label className="flex flex-col gap-1 font-medium">
-        Price
-        <input
-          type="number"
-          name="price"
-          value={form.price}
-          onChange={handleChange}
-          onWheel={(e) => e.target.blur()}
-          placeholder="Price"
-          className={inputClass}
-        />
-      </label>
-      {errors.price && <p className="text-sm text-red-600">{errors.price}</p>}
+      <Input
+        label="Name"
+        placeholder="Product name"
+        error={errors.name?.message}
+        {...register("name", {
+          required: "Name is required",
+          validate: (v) => v.trim() !== "" || "Name is required",
+        })}
+      />
 
-      <label className="flex flex-col gap-1 font-medium">
-        Quantity
-        <input
-          type="number"
-          name="qty"
-          value={form.qty}
-          onChange={handleChange}
-          onWheel={(e) => e.target.blur()}
-          placeholder="Quantity"
-          className={inputClass}
-        />
-      </label>
-      {errors.qty && <p className="text-sm text-red-600">{errors.qty}</p>}
-
-      <button
-        type="submit"
-        className="w-full rounded-md bg-blue-600 px-4 py-2.5 text-white transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+      <Select
+        label="Category"
+        error={errors.category?.message}
+        {...register("category", { required: "Please choose a category" })}
       >
+        <option value="">Select category</option>
+        <option value="Electronics">Electronics</option>
+        <option value="Books">Books</option>
+        <option value="Cloth">Cloth</option>
+        <option value="Food">Food</option>
+        <option value="Beauty & fashion">Beauty & fashion</option>
+      </Select>
+
+      <Input
+        label="Price"
+        type="number"
+        placeholder="Price"
+        error={errors.price?.message}
+        {...register("price", {
+          required: "Price is required",
+          min: { value: 0, message: "Price must be 0 or more" },
+        })}
+      />
+
+      <Input
+        label="Quantity"
+        type="number"
+        placeholder="Quantity"
+        error={errors.qty?.message}
+        {...register("qty", {
+          required: "Quantity is required",
+          min: { value: 0, message: "Quantity must be 0 or more" },
+          validate: (v) => Number.isInteger(Number(v)) || "Quantity must be a whole number",
+        })}
+      />
+
+      <Button type="submit" loading={isSubmitting} loadingText="Saving..." className="w-full">
         {editingProduct ? "Update" : "Add"}
-      </button>
+      </Button>
+
       {editingProduct && (
-        <button
-          type="button"
-          onClick={onCancel}
-          className="w-full rounded-md bg-gray-500 px-4 py-2.5 text-white transition hover:bg-gray-600"
-        >
+        <Button type="button" variant="secondary" onClick={onCancel} className="w-full">
           Cancel
-        </button>
+        </Button>
       )}
     </form>
   );

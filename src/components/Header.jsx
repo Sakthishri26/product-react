@@ -79,6 +79,10 @@ function Header({ onMenuClick }) {
                 onClick={() => setMenuOpen(false)}
                 className="block px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-600"
               >
+            <div className="border-b border-gray-200 px-4 py-2 dark:border-gray-600">
+                <p className="font-medium">{user?.name}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-300">{user?.role}</p>
+            </div>
                 My Profile
               </Link>
               <button

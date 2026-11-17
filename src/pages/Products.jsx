@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
+import { readError, friendlyError } from "../utils/api";
 import ProductForm from "../components/ProductForm";
 import ProductFilters from "../components/ProductFilters";
 import ProductTable from "../components/ProductTable";
@@ -7,11 +9,10 @@ import ConfirmModal from "../components/ConfirmModal";
 import Spinner from "../components/Spinner";
 
 function Products() {
-  const { authFetch } = useAuth();
+  const { authFetch, hasPermission } = useAuth();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [actionError, setActionError] = useState("");
   const [editingProduct, setEditingProduct] = useState(null);
   const [deleteId, setDeleteId] = useState(null);
   const [search, setSearch] = useState("");
@@ -22,12 +23,12 @@ function Products() {
     try {
       const response = await authFetch("/products");
       if (!response.ok) {
-        throw new Error("Server error " + response.status);
+        throw new Error(await readError(response, "Can't load products"));
       }
       setProducts(await response.json());
       setError("");
     } catch (err) {
-      setError("Can't load products. Is the API server running?");
+      setError(friendlyError(err));
     } finally {
       setLoading(false);
     }
@@ -37,54 +38,45 @@ function Products() {
     loadProducts();
   }, []);
 
+  
   async function handleSave(product) {
-    setActionError("");
     try {
       const response = await authFetch(`/products/${editingProduct._id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product),
       });
-      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Request failed");
+        throw new Error(await readError(response, "Request failed"));
       }
+      toast.success("Product updated");
       setEditingProduct(null);
       await loadProducts();
-      return true;
+      return null;
     } catch (err) {
-      setActionError(
-        err.message === "Failed to fetch" ? "Can't connect to server" : err.message
-      );
-      return false;
+      const message = friendlyError(err);
+      toast.error(message); 
+      return message;
     }
-  }
-
-  function handleDelete(id) {
-    setDeleteId(id);
   }
 
   async function confirmDelete() {
     const id = deleteId;
     setDeleteId(null);
-    setActionError("");
 
     try {
       const response = await authFetch(`/products/${id}`, { method: "DELETE" });
       if (!response.ok) {
-        const data = await response.json();
-        throw new Error(data.error || "Delete failed");
+        throw new Error(await readError(response, "Delete failed"));
       }
+      toast.success("Product deleted");
       await loadProducts();
     } catch (err) {
-      setActionError(
-        err.message === "Failed to fetch" ? "Can't connect to server" : err.message
-      );
+      toast.error(friendlyError(err));
     }
   }
 
   function handleEdit(product) {
-    setActionError("");
     setEditingProduct(product);
     window.scrollTo(0, 0);
   }
@@ -119,10 +111,9 @@ function Products() {
         />
       )}
 
-      <section className="mx-auto max-w-4xl text-center">
+      <section className="mx-auto max-w-5xl text-center">
         <h1 className="mb-6 text-2xl font-bold">Products</h1>
 
-        {actionError && <p className="mb-3 text-red-600">{actionError}</p>}
         {loading && <Spinner />}
         {error && <p className="text-red-600">{error}</p>}
         {!loading && !error && (
@@ -140,7 +131,9 @@ function Products() {
             <ProductTable
               products={visibleProducts}
               onEdit={handleEdit}
-              onDelete={handleDelete}
+              onDelete={setDeleteId}
+              canEdit={hasPermission("PRODUCT_EDIT")}
+              canDelete={hasPermission("PRODUCT_DELETE")}
             />
 
             <p className="mt-4 text-xl font-bold">

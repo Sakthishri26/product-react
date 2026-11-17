@@ -1,58 +1,57 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Link, Navigate, useLocation, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
-import PasswordInput from "../components/PasswordInput";
+import { readError, friendlyError } from "../utils/api";
+import Input from "../components/Input";
+import Button from "../components/Button";
 
 const API_URL = import.meta.env.VITE_API_URL;
-
-const inputClass =
-  "w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white";
 
 function Login() {
   const { token, login } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
-  const [form, setForm] = useState({ email: "", password: "" });
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [serverError, setServerError] = useState("");
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm({ defaultValues: { email: "", password: "" } });
 
-  // already logged in? go to the dashboard
+  
   if (token) {
     return <Navigate to="/" replace />;
   }
 
-  function handleChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  }
-
-  async function handleSubmit(e) {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-
+  async function onSubmit(values) {
+    setServerError("");
     try {
       const response = await fetch(`${API_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(values),
       });
-      const data = await response.json();
       if (!response.ok) {
-        throw new Error(data.error || "Login failed");
+        throw new Error(await readError(response, "Login failed"));
       }
+      const data = await response.json();
       login(data.token, data.user);
+      toast.success("Logged in");
       navigate("/");
     } catch (err) {
-      setError(err.message === "Failed to fetch" ? "Can't connect to server" : err.message);
-    } finally {
-      setLoading(false);
+      const message = friendlyError(err);
+      setServerError(message); 
+      toast.error(message);
     }
   }
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-100 px-4 dark:bg-gray-900">
       <form
-        onSubmit={handleSubmit}
+        onSubmit={handleSubmit(onSubmit)}
+        noValidate
         className="flex w-full max-w-sm flex-col gap-3 rounded-lg bg-white p-6 shadow-md dark:bg-gray-800 dark:text-gray-100"
       >
         <h1 className="text-center text-2xl font-bold">Log in to Smartmart</h1>
@@ -62,35 +61,37 @@ function Login() {
             Account created. Please log in.
           </p>
         )}
-        {error && (
-          <p className="rounded bg-red-100 p-2 text-center text-sm text-red-700">{error}</p>
+        {serverError && (
+          <p className="rounded bg-red-100 p-2 text-center text-sm text-red-700">
+            {serverError}
+          </p>
         )}
 
-        <label className="flex flex-col gap-1 font-medium">
-          Email
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            placeholder="you@example.com"
-            required
-            className={inputClass}
-          />
-        </label>
+        <Input
+          label="Email"
+          type="email"
+          placeholder="you@example.com"
+          error={errors.email?.message}
+          {...register("email", {
+            required: "Email is required",
+            pattern: { value: /^\S+@\S+\.\S+$/, message: "Enter a valid email" },
+          })}
+        />
 
-        <label className="flex flex-col gap-1 font-medium">
-          Password
-          <PasswordInput value={form.password} onChange={handleChange} className={inputClass} />
-        </label>
+        <Input
+          label="Password"
+          type="password"
+          placeholder="Password"
+          error={errors.password?.message}
+          {...register("password", {
+            required: "Password is required",
+            minLength: { value: 6, message: "Password must be at least 6 characters" },
+          })}
+        />
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-md bg-blue-600 px-4 py-2.5 text-white transition hover:bg-blue-700 disabled:opacity-60"
-        >
-          {loading ? "Logging in..." : "Log in"}
-        </button>
+        <Button type="submit" loading={isSubmitting} loadingText="Logging in..." className="w-full">
+          Log in
+        </Button>
 
         <p className="text-center text-sm">
           No account?{" "}

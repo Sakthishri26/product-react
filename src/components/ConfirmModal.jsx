@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-function ConfirmModal({ message, onConfirm, onCancel }) {
+function ConfirmModal({ message, onConfirm, onCancel, confirmLabel = "Delete" }) {
   
   useEffect(() => {
     function handleKey(e) {

@@ -1,14 +1,30 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { Outlet } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 
 function Layout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(
+    () => localStorage.getItem("sidebarCollapsed") === "true"
+  );
+
+  const closeSidebar = useCallback(() => setSidebarOpen(false), []);
+
+  function toggleCollapsed() {
+    const next = !collapsed;
+    setCollapsed(next);
+    localStorage.setItem("sidebarCollapsed", String(next)); 
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-100">
-      <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      <Sidebar
+        open={sidebarOpen}
+        onClose={closeSidebar}
+        collapsed={collapsed}
+        onToggleCollapse={toggleCollapsed}
+      />
 
       <div className="flex min-w-0 flex-1 flex-col">
         <Header onMenuClick={() => setSidebarOpen(true)} />
