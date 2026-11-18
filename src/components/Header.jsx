@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import ThemeToggle from "./ThemeToggle";
+import { ChevronDown } from "lucide-react";
 
 function getInitials(name = "") {
   const letters = name
@@ -62,15 +63,25 @@ function Header({ onMenuClick }) {
         <ThemeToggle dark={dark} onToggle={() => setDark(!dark)} />
 
         <div className="relative" ref={menuRef}>
-          <button
-            onClick={() => setMenuOpen(!menuOpen)}
-            className="flex items-center gap-2 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-700"
-          >
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
-              {getInitials(user?.name)}
-            </span>
-            <span className="hidden pr-2 sm:inline">{user?.name}</span>
-          </button>
+         <button
+           onClick={() => setMenuOpen(!menuOpen)}
+           aria-haspopup="menu"
+           aria-expanded={menuOpen}
+           className="flex items-center gap-2 rounded-full p-1 hover:bg-gray-100 dark:hover:bg-gray-700"
+         >
+           <span className="relative flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-bold text-white">
+             {getInitials(user?.name)}
+
+            <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-white text-gray-700 shadow ring-1 ring-gray-300 dark:bg-gray-700 dark:text-white dark:ring-gray-500">
+             <ChevronDown
+               size={12}
+               className={`transition-transform duration-200 ${menuOpen ? "rotate-180" : ""}`}
+             />
+           </span>
+         </span>
+
+         <span className="hidden pr-2 sm:inline">{user?.name}</span>
+        </button>
 
           {menuOpen && (
             <div className="absolute right-0 z-50 mt-2 w-44 rounded-md border border-gray-200 bg-white py-1 shadow-lg dark:border-gray-600 dark:bg-gray-700">

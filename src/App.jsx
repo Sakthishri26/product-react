@@ -1,11 +1,10 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
-import AddProduct from "./pages/AddProduct";
 import ProductDetails from "./pages/ProductDetails";
 import Users from "./pages/Users";
 import Roles from "./pages/Roles";
@@ -13,6 +12,7 @@ import Profile from "./pages/Profile";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import NotFound from "./pages/NotFound";
+
 
 function App() {
   return (
@@ -26,6 +26,7 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Dashboard />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/products/new" element={<Navigate to="/products" replace />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
 
@@ -33,9 +34,6 @@ function App() {
           <Route element={<ProtectedRoute permission="PRODUCT_VIEW" />}>
             <Route path="/products" element={<Products />} />
             <Route path="/products/:id" element={<ProductDetails />} />
-          </Route>
-          <Route element={<ProtectedRoute permission="PRODUCT_CREATE" />}>
-            <Route path="/products/new" element={<AddProduct />} />
           </Route>
           <Route element={<ProtectedRoute permission="USER_VIEW" />}>
             <Route path="/users" element={<Users />} />

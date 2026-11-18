@@ -89,12 +89,12 @@ function Dashboard() {
         </>
       )}
 
-      {hasPermission("PRODUCT_CREATE") && (
+      {hasPermission("PRODUCT_VIEW") && (
         <Link
-          to="/products/new"
+          to="/products"
           className="mt-6 inline-block rounded-md bg-blue-600 px-5 py-2.5 text-white hover:bg-blue-700"
         >
-          Add a product
+          Go to products
         </Link>
       )}
     </div>

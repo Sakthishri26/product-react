@@ -18,7 +18,6 @@ import { useAuth } from "../context/AuthContext";
 const links = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/products", label: "Products", icon: Package, end: false, permission: "PRODUCT_VIEW" },
-  { to: "/products/new", label: "Add Product", icon: Plus, end: true, permission: "PRODUCT_CREATE" },
   { to: "/users", label: "Users", icon: Users, end: false, permission: "USER_VIEW" },
   { to: "/roles", label: "Roles", icon: ShieldCheck, end: true, permission: "ROLE_MANAGE" },
   { to: "/profile", label: "Profile", icon: User, end: true },

@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { useAuth } from "../context/AuthContext";
 import { readError, friendlyError } from "../utils/api";
@@ -18,6 +18,7 @@ function Products() {
   const [search, setSearch] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("All");
   const [sortBy, setSortBy] = useState("default");
+  const formRef = useRef(null);
 
   async function loadProducts() {
     try {
@@ -38,24 +39,27 @@ function Products() {
     loadProducts();
   }, []);
 
-  
+  // Add (POST) or Update (PUT). Returns null when it worked, or the error message.
   async function handleSave(product) {
+    const isEditing = editingProduct !== null;
+    const path = isEditing ? `/products/${editingProduct._id}` : "/products";
+
     try {
-      const response = await authFetch(`/products/${editingProduct._id}`, {
-        method: "PUT",
+      const response = await authFetch(path, {
+        method: isEditing ? "PUT" : "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(product),
       });
       if (!response.ok) {
         throw new Error(await readError(response, "Request failed"));
       }
-      toast.success("Product updated");
+      toast.success(isEditing ? "Product updated" : "Product added");
       setEditingProduct(null);
       await loadProducts();
       return null;
     } catch (err) {
       const message = friendlyError(err);
-      toast.error(message); 
+      toast.error(message); // a 403 shows "You don't have permission to do this"
       return message;
     }
   }
@@ -76,9 +80,12 @@ function Products() {
     }
   }
 
+  // Edit fills the form at the bottom, so scroll down to it
   function handleEdit(product) {
     setEditingProduct(product);
-    window.scrollTo(0, 0);
+    setTimeout(() => {
+      formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 50);
   }
 
   const categories = [
@@ -100,17 +107,11 @@ function Products() {
 
   const totalStockValue = products.reduce((sum, p) => sum + p.price * p.qty, 0);
 
+  // the form shows for users who can create, or while someone is editing
+  const showForm = hasPermission("PRODUCT_CREATE") || editingProduct !== null;
+
   return (
     <div>
-      {editingProduct && (
-        <ProductForm
-          key={editingProduct._id}
-          editingProduct={editingProduct}
-          onSave={handleSave}
-          onCancel={() => setEditingProduct(null)}
-        />
-      )}
-
       <section className="mx-auto max-w-5xl text-center">
         <h1 className="mb-6 text-2xl font-bold">Products</h1>
 
@@ -139,6 +140,18 @@ function Products() {
             <p className="mt-4 text-xl font-bold">
               Total stock value: ₹{totalStockValue.toFixed(2)}
             </p>
+
+            {/* the form: centred, right after the total */}
+            {showForm && (
+              <div ref={formRef} className="mt-8 flex justify-center">
+                <ProductForm
+                  key={editingProduct ? editingProduct._id : "new"}
+                  editingProduct={editingProduct}
+                  onSave={handleSave}
+                  onCancel={() => setEditingProduct(null)}
+                />
+              </div>
+            )}
           </>
         )}
       </section>
